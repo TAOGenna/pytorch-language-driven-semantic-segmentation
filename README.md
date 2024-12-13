@@ -7,3 +7,7 @@ My implementation of the original multimodal model for image semantic segmentati
 - [ ] How to combine these two? 
 - [ ] How to attach the bottleneck for the upsampling(?)
 - [ ] What data set should I use? 
+
+---
+Things I had to learn: 
+- parsing to deal with several pretrained models 
