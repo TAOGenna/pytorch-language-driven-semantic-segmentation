@@ -1,17 +1,18 @@
 import torch
 import torch.nn as nn
+import math
 
 class Read(nn.Module):
     """
     1st step:
     Assums the number of patches is 197
-    Input for `forward` is of size `transformer_output (size=(B,1+196,D))`
+    Input for `forward` is of size `transformer_output (size=(B,1+num_patches,D))`
     Then if follows the process:
-    - (B,1+196,D) -> separate and get (B,1,D) and (B,196,D)
-    - Concatenate the readout tensor (B,1,D) to each of the 196 embeddings
-    - It will leaves us with (B, 196, 2D)
+    - (B,1+num_patches,D) -> separate and get (B,1,D) and (B,196,D)
+    - Concatenate the readout tensor (B,1,D) to each of the `num_patches` embeddings
+    - It will leaves us with (B, num_patches, 2D)
     - Get back the original dimension by applying a linear layer followed by GELU. That's 
-    (B,196,2D) to (B,196,D)
+    (B,num_patches,2D) to (B,num_patches,D)
     """
     def __init__(self, embedding_dimension):
         super().__init__()
@@ -40,14 +41,16 @@ class Read(nn.Module):
 class Concatenate(nn.Module):
     """
     2nd step:
-    Input of size: (B,196,embedding_dimension)
-    Reshape (N_p x D) to (H/p x W/p x D)
+    - Input of size: (B,num_patches,embedding_dimension-usually-1024)
+    - Reshape (N_p x D) to (H/p x W/p x D)
+    - We are assuming W/p = H/p
     """
     def __init__(self):
         super().__init__()
-
-    def forward(self):
-        pass 
+        
+    def forward(self,X):
+        batch_size, num_patches, embedding_dimension = X.shape
+        return X.view(batch_size, int(math.sqrt(num_patches)), int(math.sqrt(num_patches)), embedding_dimension)
 
 class Resample(nn.Module):
     """
@@ -93,4 +96,13 @@ if __name__ == '__main__':
         out = foo(dummy_array)
         print(out.shape)
     
+    def test_concatenate():
+        embedding_dimension = 1024
+        dummy_array = torch.Tensor(size=(10,197,embedding_dimension))
+        process = nn.Sequential(Read(embedding_dimension=embedding_dimension),Concatenate())
+        out = process(dummy_array)
+        print(out.shape) # should print (B,H/p,W/p,D)
+
+
     test_read()
+    test_concatenate()
