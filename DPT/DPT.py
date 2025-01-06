@@ -6,7 +6,7 @@ from ViT import ViT
 class DPT(nn.Module):
     def __init__(self):
         super().__init__()
-        backbone = ViT()
+        self.backbone = ViT()
         Reassemble_blocks = nn.ModuleList([
 
         ])
@@ -16,7 +16,11 @@ class DPT(nn.Module):
     
     def forward(self, X):
         X = self.backbone(X) 
+        return X
 
 
 if __name__ == '__main__':
-    print('hello')
+    model = DPT()
+    dummy_data = torch.randn(size=(10,3,224,224))
+    out = model(dummy_data)
+    print(type(out))

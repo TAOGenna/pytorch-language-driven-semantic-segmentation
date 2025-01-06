@@ -6,7 +6,7 @@ from torchvision.models import ViT_L_16_Weights
 
 class ViT(nn.Module):
     """
-    
+    Backbone of the architecture
     """
     def __init__(self):
         super().__init__()
@@ -37,7 +37,7 @@ class ViT(nn.Module):
     def forward(self, x):
         """
         - Admits images of size (B, C, H, W)
-        - Outputs a dictionary: {enconder_name : transformer_output (size=(B,197,D))}
+        - Outputs a dictionary: {enconder_name : transformer_output (size=(B,1+196,D))}
         """
         self.model(x)
         return self.features
