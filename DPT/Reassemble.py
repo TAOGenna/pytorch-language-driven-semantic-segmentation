@@ -57,9 +57,20 @@ class Resample(nn.Module):
     3th step:
     - Pass the representation from (H/p, W/p, D) to (H/s, W/s, D')
     - From shallow to deep transformers, we use s in [4, 8, 16, 32] correspondingly
+    ---------------------------------------------------------------
+    - We will force our images to end up as 14 x 14 x D, then we are code the case of each of the `s`s 
     """
     def __init__(self,s:int):
         super().__init__()
+        process = nn.Sequence(nn.Conv2d(in_channels= ,out_channels = ,kernel_size=1))
+        if s==4:
+            pass
+        elif s==8:
+            pass 
+        elif s==16:
+            pass
+        else: # if s==32
+            pass
     
     def forward(self):
         pass
@@ -102,7 +113,6 @@ if __name__ == '__main__':
         process = nn.Sequential(Read(embedding_dimension=embedding_dimension),Concatenate())
         out = process(dummy_array)
         print(out.shape) # should print (B,H/p,W/p,D)
-
 
     test_read()
     test_concatenate()

@@ -6,7 +6,9 @@ from torchvision.models import ViT_L_16_Weights
 
 class ViT(nn.Module):
     """
-    Backbone of the architecture
+    Backbone of the architecture is ViT_l_16
+    - patch_size = 16x16
+    - embedding_dimension = 1024
     """
     def __init__(self):
         super().__init__()
@@ -39,6 +41,10 @@ class ViT(nn.Module):
         - Admits images of size (B, C, H, W)
         - Outputs a dictionary: {enconder_name : transformer_output (size=(B,1+196,D))}
         """
+        # check image dimensions before processing 
+        
+
+        # end of analizer
         self.model(x)
         return self.features
     
@@ -46,6 +52,6 @@ class ViT(nn.Module):
 if __name__ == '__main__':
     silly_model = ViT()
     dummy_data = torch.randn(size=(10,3,224,224))
-    out = silly_model(dummy_data)
+    out = silly_model(dummy_data) 
     assert len(out) == len(silly_model.hooks), print(f'size of the output : {len(out)}')
-    print(out['encoder_layer_11'].shape)
+    print(out['encoder_layer_11'].shape) # output = (10, 197, 1024)
