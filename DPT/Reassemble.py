@@ -14,26 +14,27 @@ class Read(nn.Module):
     - Get back the original dimension by applying a linear layer followed by GELU. That's 
     (B,num_patches,2D) to (B,num_patches,D)
     """
-    def __init__(self, embedding_dimension):
+    def __init__(self, embedding_dimension, num_patches = 401):
         super().__init__()
 
         self.D = embedding_dimension
+        self.num_patches = num_patches-1 # subtract the readout token 
         self.linear = nn.Linear(2*self.D, self.D)
         self.activation = nn.GELU()
 
     def forward(self,X):
         """
-        Input should be of size `transformer_output (size=(B,1+196,D))`
+        Input should be of size `transformer_output (size=(B,1+#Patches,D))`
         """
         readout = X[:,0,:].unsqueeze(1) # shape = (B,1,D)
         other_embed = X[:,1:,:] # shape = (B,196,D)
-        readout_expand = readout.expand(-1,196,-1)
+        readout_expand = readout.expand(-1,self.num_patches,-1)
         concatenation = torch.cat([other_embed,readout_expand], dim=-1)
-        assert concatenation.shape == torch.Size([X.shape[0],196,2*self.D]), 'Reassemble-Read module | Concatenation not working | shape does not match'
+        assert concatenation.shape == torch.Size([X.shape[0],self.num_patches,2*self.D]), 'Reassemble-Read module | Concatenation not working | shape does not match'
 
         projection = self.linear(concatenation)
         projection = self.activation(projection)
-        assert projection.shape == torch.Size([X.shape[0],196,self.D]), 'Reassemble-Read module | projection not working | shape does not match'
+        assert projection.shape == torch.Size([X.shape[0],self.num_patches,self.D]), 'Reassemble-Read module | projection not working | shape does not match'
 
         return projection
 
@@ -58,11 +59,14 @@ class Resample(nn.Module):
     - Pass the representation from (H/p, W/p, D) to (H/s, W/s, D')
     - From shallow to deep transformers, we use s in [4, 8, 16, 32] correspondingly
     ---------------------------------------------------------------
-    - We will force our images to end up as 14 x 14 x D, then we are code the case of each of the `s`s 
+    TODO: big question: what are going to be the out_dimension for the conv layers? 
     """
-    def __init__(self,s:int):
+    def __init__(self,s:int, p:int):
         super().__init__()
-        #process = nn.Sequence(nn.Conv2d(in_channels= ,out_channels = ,kernel_size=1))
+
+        # We implement this operation by first using 1 × 1 convolutions to project the input representation to D
+        
+        
         if s==4:
             pass
         elif s==8:
@@ -84,14 +88,14 @@ class Reassemble(nn.Module):
     # `s` admits only numbers [4,8,16,32]
     admit = [4,8,16,32]
     
-    def __init__(self,s: int, embedding_dimension: int):
+    def __init__(self,s: int, embedding_dimension: int, patch_size:int ):
         super().__init__()
         assert s in admit, 'value for s is invalid'
         
         self.reassemble = nn.Sequential(
             Read(embedding_dimension),
             Concatenate(),
-            Resample(s)
+            Resample(s,patch_size)
         )
 
     def forward(self, X):
@@ -103,13 +107,13 @@ if __name__ == '__main__':
     def test_read():
         embedding_dimension = 1024
         foo = Read(embedding_dimension=embedding_dimension)
-        dummy_array = torch.Tensor(size=(10,197,embedding_dimension))
+        dummy_array = torch.Tensor(size=(10,401,embedding_dimension))
         out = foo(dummy_array)
         print(out.shape)
     
     def test_concatenate():
         embedding_dimension = 1024
-        dummy_array = torch.Tensor(size=(10,197,embedding_dimension))
+        dummy_array = torch.Tensor(size=(10,401,embedding_dimension))
         process = nn.Sequential(Read(embedding_dimension=embedding_dimension),Concatenate())
         out = process(dummy_array)
         print(out.shape) # should print (B,H/p,W/p,D)

@@ -55,7 +55,7 @@ class Fusion(nn.Module):
         super().__init__()
         
 
-        self.ResConv = 
+        self.ResConv = None
 
 
     def forward(self, X):
