@@ -62,7 +62,7 @@ class Resample(nn.Module):
     """
     def __init__(self,s:int):
         super().__init__()
-        process = nn.Sequence(nn.Conv2d(in_channels= ,out_channels = ,kernel_size=1))
+        #process = nn.Sequence(nn.Conv2d(in_channels= ,out_channels = ,kernel_size=1))
         if s==4:
             pass
         elif s==8:
