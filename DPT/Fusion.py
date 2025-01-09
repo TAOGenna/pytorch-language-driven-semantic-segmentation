@@ -5,10 +5,15 @@ import torch.nn as nn
 
 class ResidualConvUnit(nn.Module):
     """
-    See https://arxiv.org/pdf/1611.06612
-    Copied from DPT repository'
+    See RefineNet: https://arxiv.org/pdf/1611.06612
+    Copied from DPT repository
     Residual convolution module (Retains same dimension and spatial size).
     Batch normalization helps for segmentation.
+
+    To keep track of how dimensions change remember: 
+    - In a conv2d H -> {H_in + 2*padding - dilation*(kernel_size - 1) - 1}/stride + 1
+    - if H_in = token_dimen => H_out = (H_in + 2 - 2 - 1)/1 + 1 = H_in 
+    - then the resulting tensor will be of shape (B,channels = token_, H_out = H_in, W_out = W_in)
     """
 
     def __init__(self, token_dim, use_bn):
@@ -37,6 +42,9 @@ class ResidualConvUnit(nn.Module):
         self.skip_add = nn.quantized.FloatFunctional()
 
     def forward(self, X):
+        """
+        - Output: size=(same as before)
+        """
         out = self.relu(X)
         out = self.conv1(out)
         if self.use_bn:
@@ -51,14 +59,16 @@ class ResidualConvUnit(nn.Module):
 
 
 class Fusion(nn.Module):
-    def __init__(self):
+    def __init__(self, token_dim, use_bn):
         super().__init__()
-        
+    
+        self.ResConv = ResidualConvUnit(token_dim, use_bn)
+        self.Resample = None
+        self.Project = None
 
-        self.ResConv = None
-
-
-    def forward(self, X):
+    def forward(self, X, prev_reassemble):
+        X = self.ResConv(X)
+        X = X + prev_reassemble
         X = self.ResConv(X)
         X = self.Resample(X)
         X = self.Project(X)

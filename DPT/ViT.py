@@ -13,10 +13,10 @@ class ViT(nn.Module):
     - embedding_dimension = 1024
     - Admits images of 224x224 but we change it to 320x320 or any image with W and H mod 16 = 0.
     """
-    def __init__(self):
+    def __init__(self, hooks = [4, 11, 17, 23]):
         super().__init__()
         
-        self.hooks = [4, 11, 17, 23]
+        self.hooks = hooks
         self.model = torchvision.models.vit_l_16(weights=ViT_L_16_Weights.IMAGENET1K_V1)
         
         # Access the encoder
