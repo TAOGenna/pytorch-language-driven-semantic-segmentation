@@ -1,6 +1,8 @@
+# Template for download datasets using mseg-api
+
 import pandas as pd
 
-
+# Change adress
 file_name = './mseg-api/mseg/class_remapping_files/MSeg_master.tsv'
 # Read the tsv file with pandas
 df = pd.read_csv(file_name, sep='\t')
