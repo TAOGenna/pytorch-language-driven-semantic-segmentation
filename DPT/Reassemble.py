@@ -100,7 +100,7 @@ class Reassemble(nn.Module):
             # input size: (B, num_patches+readout, hidden_dimension)
 
             Read(embedding_dimension), # out.shape = (B,num_patches,D)
-            Concatenate(patch_size,image_size), # out.shape = (B, sqrt{num_patches}, sqrt{num_patches}, D) | assume H=W
+            Concatenate(patch_size,image_size), # out.shape = (B, image_size/patch_size, image_size/patch_size, D) | assume H=W=image_size
             Resample(s,patch_size)
         )
 

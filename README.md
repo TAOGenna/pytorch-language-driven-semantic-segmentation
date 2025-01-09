@@ -2,13 +2,19 @@
 
 My implementation of the original multimodal model for image semantic segmentation paper by Boyi Li et al.
 
-## What is Lseg
+## Results
 
-## Usage 
+## Content of this repo
 
+### Architecture
+
+### Setup
+
+### Dataset 
+<!-- 
 ### Training the dense prediction transformer (DPT)
 
-### Training Lseg
+### Training Lseg -->
 
 ## Acknowledgements
 - To Richard Zhao for answering all my annoying questions
