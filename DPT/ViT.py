@@ -79,5 +79,7 @@ if __name__ == '__main__':
     silly_model = ViT()
     dummy_data = torch.randn(size=(10,3,320,320))
     out = silly_model(dummy_data) 
+    print(type(out))
     assert len(out) == len(silly_model.hooks), print(f'size of the output : {len(out)}')
-    print(out['encoder_layer_11'].shape) # output = (10, 197, 1024)
+    foo = out['encoder_layer_11'].shape
+    print(f'the output shape of one of the transformers is going to be {foo}') # output = (10, 197, 1024)

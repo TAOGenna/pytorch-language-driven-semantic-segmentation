@@ -27,7 +27,7 @@ class Read(nn.Module):
         Input should be of size `transformer_output (size=(B,1+#Patches,D))`
         """
         readout = X[:,0,:].unsqueeze(1) # shape = (B,1,D)
-        other_embed = X[:,1:,:] # shape = (B,196,D)
+        other_embed = X[:,1:,:] # shape = (B,num_patches,D)
         readout_expand = readout.expand(-1,self.num_patches,-1)
         concatenation = torch.cat([other_embed,readout_expand], dim=-1)
         assert concatenation.shape == torch.Size([X.shape[0],self.num_patches,2*self.D]), 'Reassemble-Read module | Concatenation not working | shape does not match'
@@ -46,12 +46,15 @@ class Concatenate(nn.Module):
     - Reshape (N_p x D) to (H/p x W/p x D)
     - We are assuming W/p = H/p
     """
-    def __init__(self):
+    def __init__(self,patch_size,image_size):
         super().__init__()
+        self.patch_size = patch_size
+        self.image_size = image_size
         
     def forward(self,X):
         batch_size, num_patches, embedding_dimension = X.shape
-        return X.view(batch_size, int(math.sqrt(num_patches)), int(math.sqrt(num_patches)), embedding_dimension)
+        print(batch_size,num_patches,embedding_dimension)
+        return X.view(batch_size, self.image_size//self.patch_size, self.image_size//self.patch_size, embedding_dimension)
 
 class Resample(nn.Module):
     """
@@ -86,15 +89,18 @@ class Reassemble(nn.Module):
     """
 
     # `s` admits only numbers [4,8,16,32]
-    admit = [4,8,16,32]
     
-    def __init__(self,s: int, embedding_dimension: int, patch_size:int ):
+    def __init__(self,s: int, embedding_dimension: int, patch_size:int, image_size:int):
         super().__init__()
-        assert s in admit, 'value for s is invalid'
+        admit = [4,8,16,32]
+        assert s in admit, 'value s is invalid'
         
         self.reassemble = nn.Sequential(
-            Read(embedding_dimension),
-            Concatenate(),
+            # the input to this sequence is going to be the output of a transformer
+            # input size: (B, num_patches+readout, hidden_dimension)
+
+            Read(embedding_dimension), # out.shape = (B,num_patches,D)
+            Concatenate(patch_size,image_size), # out.shape = (B, sqrt{num_patches}, sqrt{num_patches}, D) | assume H=W
             Resample(s,patch_size)
         )
 
@@ -113,10 +119,11 @@ if __name__ == '__main__':
     
     def test_concatenate():
         embedding_dimension = 1024
+        image_size = 320
         dummy_array = torch.Tensor(size=(10,401,embedding_dimension))
-        process = nn.Sequential(Read(embedding_dimension=embedding_dimension),Concatenate())
+        process = nn.Sequential(Read(embedding_dimension=embedding_dimension),Concatenate(patch_size=16,image_size=image_size))
         out = process(dummy_array)
-        print(out.shape) # should print (B,H/p,W/p,D)
+        print(out.shape) # should print (B, H/p, W/p, D)
 
     test_read()
     test_concatenate()
