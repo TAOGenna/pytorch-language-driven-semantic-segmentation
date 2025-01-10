@@ -18,7 +18,6 @@ class ViT(nn.Module):
         
         self.hooks = hooks
         self.model = torchvision.models.vit_l_16(weights=ViT_L_16_Weights.IMAGENET1K_V1)
-        
         # Access the encoder
         self.encoder = self.model.encoder.layers
         
@@ -38,7 +37,6 @@ class ViT(nn.Module):
 
         # The Vit_l_16 was trained on 224x224 images with a patch_size of 16. To capture more details of the image we must increase the `image_size` to 320x320 and maintain the `patch_size`, thus obtaining more patches
         self.model.image_size = 320
-        
         # Since we are changing the `image_size` we must also interpolate the position embedding to match this change otherwise it will stay with the positions for a 224x224 image
 
         # Arguments of interpolate_embeddings:
