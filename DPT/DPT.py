@@ -11,23 +11,22 @@ class DPT(nn.Module):
         
         self.hooks = [4, 11, 17, 23]
         self.backbone = ViT(hooks=self.hooks)
-        
+        use_bn = False
         D_in = self.backbone.hidden_dim
+        D_out = 256
         patch_size =  self.backbone.patch_size
         image_size = self.backbone.image_size
         
         s = [4,8,16,32]
         
         self.Reassemble_blocks = nn.ModuleList([
-            Reassemble(s=s_i, embedding_dimension=D_in, patch_size=patch_size,image_size=image_size) for s_i in s
+            Reassemble(s_i, D_in, patch_size, image_size) for s_i in s
         ])
         self.Fusion_blocks = nn.ModuleList([
-            Fusion(),
-            Fusion(),
-            Fusion(),
-            Fusion(),
+            Fusion(features=D_out, use_bn=use_bn) for _ in range(4)
         ])
 
+        # Task-specific Head: proposed in the paper for image segmentation tasks
         self.head = nn.Sequential(
             nn.Conv2d(features, features, kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(features),
@@ -47,7 +46,7 @@ class DPT(nn.Module):
         
         out_fusion = 0 
         for index in range(3).reversed():
-            out_fusion[index] = self.backboneFusion_block[index](X=out_reassemble[index],prev_reassemble=out_fusion)
+            out_fusion = self.backboneFusion_block[index](X=out_reassemble[index],prev_reassemble=out_fusion)
 
         out = self.head(out_fusion)
 

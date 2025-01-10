@@ -64,9 +64,12 @@ class Resample(nn.Module):
     """
     def __init__(self, s:int, patch_size:int, embedding_dimension:int):
         super().__init__()
+        
         self.D_prime = 256
+        
         # We implement this operation by first using 1 × 1 convolutions to project the hidden_dimension to D_prime
         self.projection_layer = nn.Conv2d(in_channels=embedding_dimension,out_channels=self.D_prime,kernel_size=1) 
+        
         # Then depending on the value of `s` we use a Conv2D or a ConvTranspose2D to downsample or upsample
         arg = {
             4:{'in_channels':self.D_prime, 'out_channels':self.D_prime,'stride':4, 'dilation':1, 'kernel_size':4},

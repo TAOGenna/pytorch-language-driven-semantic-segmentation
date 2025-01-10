@@ -2,18 +2,19 @@ import torch
 import torch.nn as nn
 
 
-
 class ResidualConvUnit(nn.Module):
     """
-    See RefineNet: https://arxiv.org/pdf/1611.06612
-    Copied from DPT repository
+    Modified from the original DPT repo
+    Also:
+    See RefineNet: https://arxiv.org/pdf/1611.06612. Revise Sec. 3.3: Identity Mapping in RefineNet
     Residual convolution module (Retains same dimension and spatial size).
     Batch normalization helps for segmentation.
 
-    To keep track of how dimensions change remember: 
+    To keep track of how dimensions change, remember: 
     - In a conv2d H -> {H_in + 2*padding - dilation*(kernel_size - 1) - 1}/stride + 1
     - if H_in = token_dimen => H_out = (H_in + 2 - 2 - 1)/1 + 1 = H_in 
-    - then the resulting tensor will be of shape (B,channels = token_, H_out = H_in, W_out = W_in)
+    - then the resulting tensor will be of shape
+    (B, channels = token_, H_out = H_in, W_out = W_in)
     """
 
     def __init__(self, token_dim, use_bn):
@@ -43,7 +44,7 @@ class ResidualConvUnit(nn.Module):
 
     def forward(self, X):
         """
-        - Output: size=(same as before)
+        - Output: size=(same as input)
         """
         out = self.relu(X)
         out = self.conv1(out)
@@ -57,20 +58,41 @@ class ResidualConvUnit(nn.Module):
         return self.skip_add.add(out, X)
 
 
-
 class Fusion(nn.Module):
-    def __init__(self, token_dim, use_bn):
+    """
+    input, after `reassemble_block`: (B, D, W/s, H/s)
+    output: (B, D, W/(s/2), H/(s/2)) | meaning inpute is scaled by 2
+    """
+    def __init__(self, features, use_bn):
         super().__init__()
-    
-        self.ResConv = ResidualConvUnit(token_dim, use_bn)
-        self.Resample = None
-        self.Project = None
+
+        out_features = features
+        self.ResConv1 = ResidualConvUnit(features, use_bn)
+        self.ResConv2 = ResidualConvUnit(features, use_bn)
+        self.out_conv = nn.Conv2d(
+            features,
+            out_features,
+            kernel_size=1,
+            stride=1,
+            padding=0,
+            bias=True,
+            groups=1,
+        )
 
     def forward(self, X, prev_reassemble):
-        X = self.ResConv(X)
-        X = X + prev_reassemble
-        X = self.ResConv(X)
-        X = self.Resample(X)
-        X = self.Project(X)
-        
-        pass 
+        X = self.ResConv1(X)
+        X = torch.add(X,prev_reassemble)
+        X = self.ResConv2(X)
+        X = nn.functional.interpolate(X, scale_factor=2, mode="bilinear", align_corners=True)
+        X = self.out_conv(X)
+        return X
+    
+if __name__ == '__main__':
+    dummy_array = torch.randn((10,256,20,20))
+    # expected output after passing through Fusion: (10,256,40,40)
+    model = Fusion(features=256,use_bn=False)
+    out = model(dummy_array,0)
+    print(out.shape)
+
+
+    
