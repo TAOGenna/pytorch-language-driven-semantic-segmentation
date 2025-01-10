@@ -19,10 +19,7 @@ class DPT(nn.Module):
         s = [4,8,16,32]
         
         self.Reassemble_blocks = nn.ModuleList([
-            Reassemble(s=s[0], embedding_dimension=D_in, patch_size=patch_size,image_size=image_size),
-            Reassemble(s=s[1], embedding_dimension=D_in, patch_size=patch_size,image_size=image_size),
-            Reassemble(s=s[2], embedding_dimension=D_in, patch_size=patch_size,image_size=image_size),
-            Reassemble(s=s[3], embedding_dimension=D_in, patch_size=patch_size,image_size=image_size),
+            Reassemble(s=s_i, embedding_dimension=D_in, patch_size=patch_size,image_size=image_size) for s_i in s
         ])
         self.Fusion_blocks = nn.ModuleList([
             Fusion(),
