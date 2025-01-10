@@ -18,6 +18,7 @@ class ViT(nn.Module):
         
         self.hooks = hooks
         self.model = torchvision.models.vit_l_16(weights=ViT_L_16_Weights.IMAGENET1K_V1)
+        self.model.encoder.pos_embedding.requires_grad_(False)
         # Access the encoder
         self.encoder = self.model.encoder.layers
         
@@ -32,8 +33,6 @@ class ViT(nn.Module):
                 getattr(self.encoder, layer_name).register_forward_hook(self.save_output_hook(layer_name))
             else:
                 print(f"Warning: {layer_name} not found in encoder layers.")
-
-        #TODO: analyze what components should have require_grad = False
 
         # The Vit_l_16 was trained on 224x224 images with a patch_size of 16. To capture more details of the image we must increase the `image_size` to 320x320 and maintain the `patch_size`, thus obtaining more patches
         self.model.image_size = 320
