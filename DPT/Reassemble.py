@@ -116,35 +116,4 @@ class Reassemble(nn.Module):
 
 
 if __name__ == '__main__':
-
-    def test_read():
-        embedding_dimension = 1024
-        foo = Read(embedding_dimension=embedding_dimension)
-        dummy_array = torch.Tensor(size=(10,401,embedding_dimension))
-        out = foo(dummy_array)
-        print(out.shape)
-    
-    def test_concatenate():
-        embedding_dimension = 1024
-        image_size = 320
-        dummy_array = torch.Tensor(size=(10,401,embedding_dimension))
-        process = nn.Sequential(Read(embedding_dimension=embedding_dimension),Concatenate(patch_size=16,image_size=image_size))
-        out = process(dummy_array)
-        print(out.shape) # should print (B, H/p, W/p, D)
-
-    def test_Reassemble():
-        embedding_dimension = 1024
-        image_size = 320
-        patch_size=16
-        s = [4,8,16,32]
-        dummy_array = torch.Tensor(size=(10,401,embedding_dimension))
-        print('-----------------------------------------------------------')
-        for s_i in s:
-            model = Reassemble(s_i,embedding_dimension,patch_size,image_size)
-            out = model(dummy_array)
-            print(out.shape)
-        print('-----------------------------------------------------------')
-
-    test_read()
-    test_concatenate()
-    test_Reassemble()
+    pass

@@ -46,13 +46,12 @@ class DPT(nn.Module):
             out_reassemble[idx] = self.Reassemble_blocks[idx](out_ViT[f'encoder_layer_{hook}'])
         
         out_fusion = 0 
-        for idx, out_reass in enumerate(out_reassemble.reverse()):
-            index = 3 - idx 
+        for index in range(3).reversed():
             out_fusion[index] = self.backboneFusion_block[index](X=out_reassemble[index],prev_reassemble=out_fusion)
 
         out = self.head(out_fusion)
 
-        return X
+        return out
 
 
 if __name__ == '__main__':
