@@ -14,11 +14,9 @@ class Read(nn.Module):
     - Get back the original dimension by applying a linear layer followed by GELU. That's 
     (B,num_patches,2D) to (B,num_patches,D)
     """
-    def __init__(self, embedding_dimension, num_patches = 401):
+    def __init__(self, embedding_dimension):
         super().__init__()
-
         self.D = embedding_dimension
-        self.num_patches = num_patches-1 # subtract the readout token 
         self.linear = nn.Linear(in_features = 2*self.D, out_features = self.D)
         self.activation = nn.GELU()
 
@@ -26,15 +24,17 @@ class Read(nn.Module):
         """
         Input should be of size `transformer_output (size=(B,1+#Patches,D))`
         """
-        readout = X[:,0,:].unsqueeze(1) # shape = (B,1,D)
-        other_embed = X[:,1:,:] # shape = (B,num_patches,D)
-        readout_expand = readout.expand(-1,self.num_patches,-1)
-        concatenation = torch.cat([other_embed,readout_expand], dim=-1)
-        assert concatenation.shape == torch.Size([X.shape[0],self.num_patches,2*self.D]), 'Reassemble-Read module | Concatenation not working | shape does not match'
+        
+        num_patches = X.shape[1]-1
+        readout_embedding = X[:,0,:].unsqueeze(1) # shape = (B,1,D)
+        readout_expand_embeddings = readout_embedding.expand(-1,num_patches,-1)
+        patches_embeddings = X[:,1:,:] # shape = (B,num_patches,D)
+        concatenation = torch.cat([patches_embeddings,readout_expand_embeddings], dim=-1)
+        assert concatenation.shape == torch.Size([X.shape[0],num_patches,2*self.D]), 'Reassemble-Read module | Concatenation not working | shape does not match'
 
         projection = self.linear(concatenation)
         projection = self.activation(projection)
-        assert projection.shape == torch.Size([X.shape[0],self.num_patches,self.D]), 'Reassemble-Read module | projection not working | shape does not match'
+        assert projection.shape == torch.Size([X.shape[0],num_patches,self.D]), 'Reassemble-Read module | projection not working | shape does not match'
 
         return projection
 
@@ -98,6 +98,7 @@ class Reassemble(nn.Module):
     `s` admits only numbers [4,8,16,32]
     """    
     def __init__(self,s: int, embedding_dimension: int, patch_size:int, image_size:int):
+        # patch_size NOT EQUAL TO number_patches
         super().__init__()
         admit = [4,8,16,32]
         assert s in admit, 'value s is invalid'
@@ -105,7 +106,7 @@ class Reassemble(nn.Module):
         # the input to this sequence is going to be the output of a transformer
         # input size: (B, num_patches+readout, hidden_dimension)
         self.reassemble = nn.Sequential(
-            Read(embedding_dimension), # out.shape = (B,num_patches,D)
+            Read(embedding_dimension=embedding_dimension), # out.shape = (B,num_patches,D)
             Concatenate(patch_size,image_size), # out.shape = (B, image_size/patch_size, image_size/patch_size, D) | assume H=W=image_size
             Resample(s,patch_size,embedding_dimension)
         )
@@ -119,4 +120,11 @@ class Reassemble(nn.Module):
 
 
 if __name__ == '__main__':
-    pass
+    def test_read():
+        embedding_dimension = 1024
+        foo = Read(embedding_dimension=embedding_dimension)
+        dummy_array = torch.Tensor(size=(10,401,embedding_dimension))
+        out = foo(dummy_array)
+        print(out.shape)
+
+    test_read()

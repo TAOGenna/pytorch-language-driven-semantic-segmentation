@@ -1,1 +1,2 @@
 data/mseg_dataset/*
+lightning_logs/*
