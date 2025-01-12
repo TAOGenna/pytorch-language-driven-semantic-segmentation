@@ -33,14 +33,20 @@ class DPT(nn.Module):
             nn.BatchNorm2d(D_out),
             nn.ReLU(True),
             nn.Dropout(0.1, False),
-            nn.Conv2d(D_out, 150, kernel_size=1),
+            nn.Conv2d(D_out, 3, kernel_size=1),
             Interpolate(scale_factor=2, mode="bilinear", align_corners=True),
         )
     
     def forward(self, X):
+        """
+        input: receives an image of size (B, Channels, W, H)
+        output: (B, number_classes, W, H)
+        """
+        self.backbone(X)
+
         # returns a dictionary with four elements, the outputs of the transformers
         # Name of the encoders as `f'encoder_layer_{hook}'`, see `self.hooks`
-        out_ViT = self.backbone(X)
+        out_ViT = self.backbone.features
         out_reassemble = [0]*4
         for idx, hook in enumerate(self.hooks):
             out_reassemble[idx] = self.Reassemble_blocks[idx](out_ViT[f'encoder_layer_{hook}'])
@@ -64,3 +70,4 @@ if __name__ == '__main__':
     print(type(out))
     # Final output should be of shape (B, num_classes=150, W, H)
     print(out.shape)
+    print('everything ok')

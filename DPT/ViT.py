@@ -19,6 +19,7 @@ class ViT(nn.Module):
         self.hooks = hooks
         self.model = torchvision.models.vit_l_16(weights=ViT_L_16_Weights.IMAGENET1K_V1)
         self.model.encoder.pos_embedding.requires_grad_(False)
+       
         # Access the encoder
         self.encoder = self.model.encoder.layers
         
@@ -68,14 +69,14 @@ class ViT(nn.Module):
             self.model.encoder.pos_embedding.data = new_pos_embed['encoder.pos_embedding']
 
         # end of analizer
-        self.model(X)
-        return self.features
+        return self.model(X)
     
 
 if __name__ == '__main__':
     silly_model = ViT()
     dummy_data = torch.randn(size=(10,3,320,320))
-    out = silly_model(dummy_data) 
+    silly_model(dummy_data) 
+    out = silly_model.features
     print(type(out))
     assert len(out) == len(silly_model.hooks), print(f'size of the output : {len(out)}')
     foo = out['encoder_layer_11'].shape
