@@ -1,2 +1,2 @@
-data/mseg_dataset/*
+data/*
 lightning_logs/*
