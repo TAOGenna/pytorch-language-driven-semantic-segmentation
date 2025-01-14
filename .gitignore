@@ -1,5 +1,3 @@
 data/*
 lightning_logs/*
-mseg_api/relabeled_data/*
-mseg_api/dataset_lists/*
-mseg_api/class_remapping_files/*
+mseg_api/mseg/*
