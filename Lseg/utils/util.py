@@ -1,9 +1,7 @@
-# Taken from https://github.com/rzhao5659/2024-LSeg/blob/main/Lseg/data/util.py
-
 import torch
 import pandas as pd
 from mseg.taxonomy.taxonomy_converter import TaxonomyConverter
-from Lseg.data.dataset import SemData
+from Lseg.utils.dataset import SemData
 import os
 from torchvision.transforms import v2
 from torchvision.transforms import InterpolationMode
@@ -18,7 +16,7 @@ semantic_label_tsv_path = "mseg-api/mseg/class_remapping_files/MSeg_master.tsv"
 coco_images_dir = "data/mseg_dataset/COCOPanoptic/"
 coco_train_text_path = "mseg-api/mseg/dataset_lists/coco-panoptic-133-relabeled/list/train.txt"
 coco_val_text_path = "mseg-api/mseg/dataset_lists/coco-panoptic-133-relabeled/list/val.txt"
-ade20k_images_dir = "data/mseg_dataset/ADE20K/"
+ade20k_images_dir = "data/mseg_dataset/ADE20K/ADEChallengeData2016/"
 ade20k_train_text_path = "mseg-api/mseg/dataset_lists/ade20k-150-relabeled/list/train.txt"
 ade20k_val_text_path = "mseg-api/mseg/dataset_lists/ade20k-150-relabeled/list/val.txt"
 
