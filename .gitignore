@@ -1,3 +1,5 @@
 data/*
 lightning_logs/*
-mseg-api/*
+mseg-api/download_scripts/__MACOSX*
+mseg-api/download_scripts/annotations*
+mseg-api/download_scripts/images*
