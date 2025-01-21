@@ -7,7 +7,7 @@ from ViT import ViT
 from Interpolate import Interpolate
 
 class DPT(nn.Module):
-    def __init__(self, D_out=None):
+    def __init__(self, D_out=None, mode = None):
         super().__init__()
         
         self.hooks = [4, 11, 17, 23]
@@ -26,16 +26,18 @@ class DPT(nn.Module):
         self.Fusion_blocks = nn.ModuleList([
             Fusion(features=D_out, use_bn=use_bn) for _ in range(4)
         ])
-
-        # Task-specific Head: proposed in the paper for image segmentation tasks
-        self.head = nn.Sequential(
-            nn.Conv2d(D_out, D_out, kernel_size=3, padding=1, bias=False),
-            nn.BatchNorm2d(D_out),
-            nn.ReLU(True),
-            nn.Dropout(0.1, False),
-            nn.Conv2d(D_out, 3, kernel_size=1),
-            Interpolate(scale_factor=2, mode="bilinear", align_corners=True),
-        )
+        if mode is None:
+            # Task-specific Head: proposed in the paper for image segmentation tasks
+            self.head = nn.Sequential(
+                nn.Conv2d(D_out, D_out, kernel_size=3, padding=1, bias=False),
+                nn.BatchNorm2d(D_out),
+                nn.ReLU(True),
+                nn.Dropout(0.1, False),
+                nn.Conv2d(D_out, 3, kernel_size=1),
+                Interpolate(scale_factor=2, mode="bilinear", align_corners=True),
+            )
+        else: # mode == 'Lseg'
+            self.head = nn.Identity()
     
     def forward(self, X):
         """
@@ -62,8 +64,22 @@ class DPT(nn.Module):
 if __name__ == '__main__':
     model = DPT(D_out=512)
     dummy_data = torch.randn(size=(10,3,320,320)) # simulates a batch of RGB images (batch_size, channels, W, H)
-    out = model(dummy_data)
-    print(type(out))
+    print('INFO ORIGINAL TENSOR')
+    print(type(dummy_data))
     # Final output should be of shape (B, num_classes=150, W, H)
-    print(out.shape)
+    print(dummy_data.shape)
+    out = model(dummy_data)
+    print('OUTPUT')
+    print('if head is NONE:', type(out), 'and with size ', out.shape)
+    model = DPT(D_out=512, mode='Lseg')
+    out = model(dummy_data)
+    print('if head is Lseg:', type(out), 'and with size ', out.shape)
     print('everything ok')
+    # Expected output:
+    # INFO ORIGINAL TENSOR
+    # <class 'torch.Tensor'>
+    # torch.Size([10, 3, 320, 320])
+    # OUTPUT
+    # if head is NONE: <class 'torch.Tensor'> and with size  torch.Size([10, 3, 320, 320])
+    # if head is Lseg: <class 'torch.Tensor'> and with size  torch.Size([10, 512, 160, 160])
+    # everything ok
