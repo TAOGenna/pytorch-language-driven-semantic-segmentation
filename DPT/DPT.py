@@ -7,7 +7,7 @@ from ViT import ViT
 from Interpolate import Interpolate
 
 class DPT(nn.Module):
-    def __init__(self, D_out=None, mode = None):
+    def __init__(self, D_out=None, head = None):
         super().__init__()
         
         self.hooks = [4, 11, 17, 23]
@@ -26,7 +26,7 @@ class DPT(nn.Module):
         self.Fusion_blocks = nn.ModuleList([
             Fusion(features=D_out, use_bn=use_bn) for _ in range(4)
         ])
-        if mode is None:
+        if head is None:
             # Task-specific Head: proposed in the paper for image segmentation tasks
             self.head = nn.Sequential(
                 nn.Conv2d(D_out, D_out, kernel_size=3, padding=1, bias=False),
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     out = model(dummy_data)
     print('OUTPUT')
     print('if head is NONE:', type(out), 'and with size ', out.shape)
-    model = DPT(D_out=512, mode='Lseg')
+    model = DPT(D_out=512, head='Lseg')
     out = model(dummy_data)
     print('if head is Lseg:', type(out), 'and with size ', out.shape)
     print('everything ok')
