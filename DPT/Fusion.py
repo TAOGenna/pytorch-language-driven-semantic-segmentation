@@ -88,9 +88,9 @@ class Fusion(nn.Module):
         return X
     
 if __name__ == '__main__':
-    dummy_array = torch.randn((10,256,20,20))
-    # expected output after passing through Fusion: (10,256,40,40)
-    model = Fusion(features=256,use_bn=False)
+    dummy_array = torch.randn((10,512,20,20))
+    # expected output after passing through Fusion: (10,512,40,40)
+    model = Fusion(features=512,use_bn=False)
     out = model(dummy_array,0)
     print(out.shape)
 

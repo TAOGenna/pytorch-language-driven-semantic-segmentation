@@ -62,10 +62,10 @@ class Resample(nn.Module):
     - Pass the representation from (H/p, W/p, D) to (H/s, W/s, D')
     - From shallow to deep transformers, we use s \in [4, 8, 16, 32]
     """
-    def __init__(self, s:int, patch_size:int, embedding_dimension:int):
+    def __init__(self, s:int, patch_size:int, embedding_dimension:int, D_out:int):
         super().__init__()
         
-        self.D_prime = 256
+        self.D_prime = D_out
         
         # We implement this operation by first using 1 × 1 convolutions to project the hidden_dimension to D_prime
         self.projection_layer = nn.Conv2d(in_channels=embedding_dimension,out_channels=self.D_prime,kernel_size=1) 
@@ -97,7 +97,7 @@ class Reassemble(nn.Module):
      
     `s` admits only numbers [4,8,16,32]
     """    
-    def __init__(self,s: int, embedding_dimension: int, patch_size:int, image_size:int):
+    def __init__(self,s: int, embedding_dimension: int, patch_size:int, image_size:int, D_out:int):
         # patch_size NOT EQUAL TO number_patches
         super().__init__()
         admit = [4,8,16,32]
@@ -108,7 +108,7 @@ class Reassemble(nn.Module):
         self.reassemble = nn.Sequential(
             Read(embedding_dimension=embedding_dimension), # out.shape = (B,num_patches,D)
             Concatenate(patch_size,image_size), # out.shape = (B, image_size/patch_size, image_size/patch_size, D) | assume H=W=image_size
-            Resample(s,patch_size,embedding_dimension)
+            Resample(s,patch_size,embedding_dimension,D_out)
         )
 
     def forward(self, X):
