@@ -3,16 +3,18 @@
 My implementation of the "Lseg: language driven semantic segmentation" paper by Boyi Li et al.
 
 They try to hence semantic segmentation labeling with the help of NLP, especifically with a clever integration with the CLIP model.  
-<!-- 
-## Results
 
-## Content of this repo
+## Architecture
 
-### Architecture
+<p align="center">
+<img src="readme_images/lseg_architecture.jpg" width="500"/>
+</p>
 
-### Setup -->
+A dense prediction transformer (DPT) with a modified head encodes at pixel level 
 
-### Dataset 
+
+
+## Dataset 
 We will train our model only on the ADE20K and COCOPanoptic datasets. We use [MSeg-API](https://github.com/mseg-dataset/mseg-api/tree/master) to download and relabel them. I recommend following its [instructions](https://github.com/mseg-dataset/mseg-api/blob/master/download_scripts/README.md) step by step but with a few modifications:
 
 - `mseg-api` should be cloned in the repo main directory.   
