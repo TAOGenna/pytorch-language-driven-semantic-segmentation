@@ -74,7 +74,7 @@ if __name__ == '__main__':
     model = DPT(D_out=512, head='Lseg')
     out = model(dummy_data)
     print('if head is Lseg:', type(out), 'and with size ', out.shape)
-    print('everything ok')
+    print('---------------------- Everything OK --------------------')
     # Expected output:
     # INFO ORIGINAL TENSOR
     # <class 'torch.Tensor'>
