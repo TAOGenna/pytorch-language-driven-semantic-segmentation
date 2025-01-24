@@ -32,4 +32,4 @@ Once everything is downloaded, we use `mseg-semantic utils` [link](https://githu
 ### Training Lseg -->
 
 ## Acknowledgements
-- To Richard Zhao for answering all my annoying questions, and for provide the dataset
+- To Richard Zhao for answering all my annoying questions

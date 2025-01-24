@@ -9,7 +9,7 @@ from Lseg.utils.util import get_dataset
 import torch
 from Lseg.utils.util import ToUniversalLabel, semantic_label_tsv_path
 from Interpolate import Interpolate
-import lightning as L 
+
 
 class Lseg(nn.Module):
     def __init__(self):
@@ -39,7 +39,7 @@ class Lseg(nn.Module):
         """
         images:
             - During training we use a fixed vocabulary for all the images | list of strings to be embedded
-            - During evaluation: we must be able to define the list of words the model can identity
+            - During evaluation: we must be able to define a new list of words
         """
 
         # LABELS EMBEDDING PROCESSING 
@@ -68,34 +68,5 @@ class Lseg(nn.Module):
         correlation_tensor = correlation_tensor * torch.exp(self.temperature)
         correlation_tensor = correlation_tensor.view(img_shape[0],img_shape[2],img_shape[3],img_shape[1]).permute(0,3,1,2)
 
-        out = self.head(correlation_tensor)
-        print('finished Lseg')
+        out = self.head(correlation_tensor) # shape (batch_size, encode_dimension, W, H)
         return correlation_tensor
-
-
-class LitLseg(L.LightningModule):
-    def __init__(self):
-        super().__init__()
-        self.model = Lseg()
-        self.learning_rate = None
-        self.ignore_label_index = 194
-
-    def forward(self,x):
-        out = self.model(x)
-        return out
-    
-    def configure_optimizers(self):
-        # the setup is the same as in the ipynb `test_DPT` as we are only interested in training those weights. CLIP is freezed. 
-        optimizer = torch.optim.SGD(self.model.DPT.parameters(), lr = self.learning_rate)
-        lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,lr_lambda = lambda epoch: pow(1.0 - epoch/self.max_epochs, 0.9))
-        return [optimizer], [lr_scheduler]
-
-    def training_step(self):
-        pass
-
-
-if __name__ == '__main__':
-    model = Lseg()
-    print(model.parameters())
-
-    
