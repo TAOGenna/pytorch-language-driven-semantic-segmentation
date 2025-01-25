@@ -40,13 +40,16 @@ class Lseg(BaseModel):
     def __init__(self):
         super().__init__()
 
+        # multimodal embedding 
+        self.multi_embedding = 512
+
         # text encoder
         self.clip_pretrained, _ = clip.load('ViT-B/32', jit=False)
         self.clip_pretrained.requires_grad_(False)
         self.clip_pretrained = self.clip_pretrained.to(device='cuda')
 
         # image encoder
-        self.DPT = DPT(D_out = 512, head='Lseg')
+        self.DPT = DPT(D_out = self.multi_embedding, head='Lseg')
 
         # predefined labels
         self.labels = ToUniversalLabel.read_MSeg_master(semantic_label_tsv_path)
@@ -88,13 +91,14 @@ class Lseg(BaseModel):
         # WORD-PIXEL CORRELATION TENSOR 
         # compute similarity | this are the logits
         # computational trick, send everything to 2D and then reshape
+        # (B, C, H, W) -> (B, H, W, C) -> (B*H*W, C)
         img_embd = img_embd.permute(0,2,3,1).view(-1,img_shape[1])
         correlation_tensor = torch.matmul(img_embd,words_embd.transpose(0,1))
         correlation_tensor = correlation_tensor * torch.exp(self.temperature)
-        correlation_tensor = correlation_tensor.view(img_shape[0],img_shape[2],img_shape[3],img_shape[1]).permute(0,3,1,2)
-
+        correlation_tensor = correlation_tensor.view(img_shape[0],img_shape[2],img_shape[3],
+        -1).permute(0,3,1,2)
         out = self.head(correlation_tensor) # shape (batch_size, encode_dimension, W, H)
-        return correlation_tensor
+        return out
 
 
 class LitLseg(L.LightningModule):
@@ -104,8 +108,8 @@ class LitLseg(L.LightningModule):
         self.lr = self.base_lr
         self.max_epochs = max_epochs
         self.model = Lseg()
-        self.ignore_label_index = 194 # label for 'others'
-        self.loss_fn = nn.CrossEntropyLoss(ignore_index=self.ignore_label_index)
+        self.ignore_index = 194 # label for 'others'
+        self.loss_fn = nn.CrossEntropyLoss(ignore_index=self.ignore_index)
 
         # track accuracy 
         self.train_accuracy = Accuracy(task='multiclass', num_classes=num_classes)
