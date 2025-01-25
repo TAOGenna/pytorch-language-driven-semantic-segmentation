@@ -22,9 +22,14 @@ A dense prediction transformer (DPT) with a modified head encodes at pixel level
 <img src="readme_images/sign_prediction.jpg" width="200px">
 </p>
 <p align="center">
-<img src="readme_images/people_original_re.jpg" width="167px">
+<img src="readme_images/people_original_re.jpg" width="169px">
 <img src="readme_images/people_ground_truth.jpg" width="200px">
 <img src="readme_images/people_prediction.jpg" width="200px">
+</p>
+<p align="center">
+<img src="readme_images/playing_original_re.jpg" width="169px">
+<img src="readme_images/playing_ground_truth.jpg" width="200px">
+<img src="readme_images/playing_prediction.jpg" width="200px">
 </p>
 
 
