@@ -24,8 +24,7 @@ We will train our model only on the ADE20K and COCOPanoptic datasets. We use [MS
 Once everything is downloaded, we use `mseg-semantic utils` [link](https://github.com/mseg-dataset/mseg-semantic/blob/master/mseg_semantic/utils/dataset.py) to interact with the data and create the dataloader. 
 
 - I needed to change `ade20k_images_dir = "data/mseg_dataset/ADE20K/"` to `ade20k_images_dir = "data/mseg_dataset/ADE20K/ADEChallengeData2016/"` in `Lseg/utils/util.py` , otherwise an error shows up. 
-- Use `test_data_utils.ipynb` to check `get_dataset` from `utils` is fetching the images correctly. In my case, the folder `train2017` wasn't inside the `images` folder, so I had to create it myself. Once that is done, `coco` dataset can be used. 
-
+- Use `test_data_utils.ipynb` to check we are fetching the images correctly. In my case, for the COCO dataset, nor the folder `train2017` nor `val2017` was inside `data/COCOPanoptic/images/` so I had to create the folder myself and put both inside.
 <!-- 
 ### Training the dense prediction transformer (DPT)
 

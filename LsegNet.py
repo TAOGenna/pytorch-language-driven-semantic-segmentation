@@ -171,91 +171,91 @@ class LitLseg(L.LightningModule):
         valid_pixels = target_val != self.ignore_index
         return hard_model_predictions[valid_pixels], target_val[valid_pixels]
     
+if __name__ == '__main__':
+    # Path to the latest checkpoint. Set to None if you don't have.
+    # latest_checkpoint_path = "checkpoints/checkpoint_epoch=0-val_loss=4.7304.ckpt"
+    # latest_checkpoint_path = "checkpoints/lastest-epoch=5-step=54000.ckpt"
+    latest_checkpoint_path = None
 
-# Path to the latest checkpoint. Set to None if you don't have.
-# latest_checkpoint_path = "checkpoints/checkpoint_epoch=0-val_loss=4.7304.ckpt"
-# latest_checkpoint_path = "checkpoints/lastest-epoch=5-step=54000.ckpt"
-latest_checkpoint_path = None
+    # Concatenate ade20k and coco datasets
+    train_coco_dataset = get_dataset(dataset_name="coco", get_train=True)
+    train_ade20k_dataset = get_dataset(dataset_name="ade20k", get_train=True)
+    val_coco_dataset = get_dataset(dataset_name="coco", get_train=False)
+    val_ade20k_dataset = get_dataset(dataset_name="ade20k", get_train=False)
+    train_dataset = ConcatDataset([train_coco_dataset, train_ade20k_dataset])
+    val_dataset = ConcatDataset([val_coco_dataset, val_ade20k_dataset])
 
-# Concatenate ade20k and coco datasets
-train_coco_dataset = get_dataset(dataset_name="coco", get_train=True)
-train_ade20k_dataset = get_dataset(dataset_name="ade20k", get_train=True)
-val_coco_dataset = get_dataset(dataset_name="coco", get_train=False)
-val_ade20k_dataset = get_dataset(dataset_name="ade20k", get_train=False)
-train_dataset = ConcatDataset([train_coco_dataset, train_ade20k_dataset])
-val_dataset = ConcatDataset([val_coco_dataset, val_ade20k_dataset])
+    # Configuration
+    config = {
+        "batch_size": 12,  # 6
+        "base_lr": 0.04,
+        "max_epochs": 10,
+        "num_features": 512,
+    }
 
-# Configuration
-config = {
-    "batch_size": 12,  # 6
-    "base_lr": 0.04,
-    "max_epochs": 10,
-    "num_features": 512,
-}
+    train_dataloaders = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=True, num_workers=8)
+    val_dataloaders = DataLoader(val_dataset, batch_size=config["batch_size"], shuffle=False, num_workers=8)
 
-train_dataloaders = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=True, num_workers=8)
-val_dataloaders = DataLoader(val_dataset, batch_size=config["batch_size"], shuffle=False, num_workers=8)
+    labels = get_labels()
 
-labels = get_labels()
-
-# Initialize model
-model = LitLseg(
-    max_epochs=config["max_epochs"],
-    num_classes=len(labels),
-    batch_size=config["batch_size"],
-    base_lr=config["base_lr"],
-)
-
-
-print('---------------------------------------------------')
-print(type(model))
-print(isinstance(model, L.LightningModule))
-print('---------------------------------------------------')
+    # Initialize model
+    model = LitLseg(
+        max_epochs=config["max_epochs"],
+        num_classes=len(labels),
+        batch_size=config["batch_size"],
+        base_lr=config["base_lr"],
+    )
 
 
-summary = ModelSummary(model, max_depth=-1)
-print(summary)
+    print('---------------------------------------------------')
+    print(type(model))
+    print(isinstance(model, L.LightningModule))
+    print('---------------------------------------------------')
 
-best_val_checkpoint_callback = ModelCheckpoint(
-    dirpath="checkpoints",
-    monitor="val_loss",  # Metric to monitor
-    mode="min",  # Save the model with the minimum loss
-    save_top_k=1,  # Only keep the best model
-    filename="checkpoint_{epoch}-{val_loss:.4f}",  # Filename format
-    verbose=False,
-    save_on_train_epoch_end=True,
-)
 
-last_checkpoint_callback = ModelCheckpoint(
-    dirpath="checkpoints",
-    monitor="step",
-    mode="max",
-    every_n_train_steps=3000,
-    save_top_k=1,  # Only keep one model
-    filename="lastest-{epoch}-{step}",  # Filename format
-)
+    summary = ModelSummary(model, max_depth=-1)
+    print(summary)
 
-# # Wandb logger
-# wandb_logger = WandbLogger(
-#     project="LSeg",
-#     log_model="all",
-# )
+    best_val_checkpoint_callback = ModelCheckpoint(
+        dirpath="checkpoints",
+        monitor="val_loss",  # Metric to monitor
+        mode="min",  # Save the model with the minimum loss
+        save_top_k=1,  # Only keep the best model
+        filename="checkpoint_{epoch}-{val_loss:.4f}",  # Filename format
+        verbose=False,
+        save_on_train_epoch_end=True,
+    )
 
-# Trainer
-trainer = pl.Trainer(
-    max_epochs=config["max_epochs"],
-    devices=1 if torch.cuda.is_available() else "auto",  # Use GPUs if available
-    accelerator="cuda" if torch.cuda.is_available() else "auto",  # Specify GPU usage
-    precision=16 if torch.cuda.is_available() else 32,  # Use mixed precision if using GPU
-    callbacks=[best_val_checkpoint_callback, last_checkpoint_callback]
-    # limit_train_batches=1,  # For testing purposes.
-    # limit_val_batches=1,
-)
+    last_checkpoint_callback = ModelCheckpoint(
+        dirpath="checkpoints",
+        monitor="step",
+        mode="max",
+        every_n_train_steps=3000,
+        save_top_k=1,  # Only keep one model
+        filename="lastest-{epoch}-{step}",  # Filename format
+    )
 
-# Continue training
-trainer.fit(
-    model,
-    train_dataloaders=train_dataloaders,
-    val_dataloaders=val_dataloaders,
-    ckpt_path=latest_checkpoint_path,  # Resume from the latest checkpoint
-)
+    # # Wandb logger
+    # wandb_logger = WandbLogger(
+    #     project="LSeg",
+    #     log_model="all",
+    # )
+
+    # Trainer
+    trainer = pl.Trainer(
+        max_epochs=config["max_epochs"],
+        devices=1 if torch.cuda.is_available() else "auto",  # Use GPUs if available
+        accelerator="cuda" if torch.cuda.is_available() else "auto",  # Specify GPU usage
+        precision=16 if torch.cuda.is_available() else 32,  # Use mixed precision if using GPU
+        callbacks=[best_val_checkpoint_callback, last_checkpoint_callback]
+        # limit_train_batches=1,  # For testing purposes.
+        # limit_val_batches=1,
+    )
+
+    # Continue training
+    trainer.fit(
+        model,
+        train_dataloaders=train_dataloaders,
+        val_dataloaders=val_dataloaders,
+        ckpt_path=latest_checkpoint_path,  # Resume from the latest checkpoint
+    )
