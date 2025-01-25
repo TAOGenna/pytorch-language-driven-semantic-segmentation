@@ -2,16 +2,30 @@
 
 My implementation of the "Lseg: language driven semantic segmentation" paper by Boyi Li et al.
 
-They try to hence semantic segmentation labeling with the help of NLP, especifically with a clever integration with the CLIP model.  
-
 ## Architecture
 
 <p align="center">
 <img src="readme_images/lseg_architecture.jpg" width="500"/>
 </p>
 
-A dense prediction transformer (DPT) with a modified head encodes at pixel level 
+A dense prediction transformer (DPT) with a modified head encodes at pixel level, and the CLIP model encodes a set of words. Both embeddings are later combined in a multimodal latent space (orange tensor in the image) which will be later compared to the ground truth labels of an annotated image. 
+## Results 
 
+<p align="center">
+<img src="readme_images/bear_original_re.jpg" width="167px">
+<img src="readme_images/bear_ground_truth.jpg" width="200px">
+<img src="readme_images/bear_prediction.jpg" width="200px">
+</p>
+<p align="center">
+<img src="readme_images/sign_original_re.jpg" width="167px">
+<img src="readme_images/sign_ground_truth.jpg" width="200px">
+<img src="readme_images/sign_prediction.jpg" width="200px">
+</p>
+<p align="center">
+<img src="readme_images/people_original_re.jpg" width="167px">
+<img src="readme_images/people_ground_truth.jpg" width="200px">
+<img src="readme_images/people_prediction.jpg" width="200px">
+</p>
 
 
 ## Dataset 
@@ -32,3 +46,7 @@ Once everything is downloaded, we use `mseg-semantic utils` [link](https://githu
 
 ## Acknowledgements
 - To Richard Zhao for answering all my annoying questions
+- Useful repositories:
+    - https://github.com/rzhao5659/2024-LSeg/tree/main
+    - https://github.com/isl-org/lang-seg
+    - https://github.com/mseg-dataset/mseg-api
