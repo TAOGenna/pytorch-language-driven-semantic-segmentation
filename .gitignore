@@ -4,3 +4,4 @@ mseg-api/download_scripts/__MACOSX*
 mseg-api/download_scripts/annotations*
 mseg-api/download_scripts/images*
 __pycache__/*
+checkpoints/*
