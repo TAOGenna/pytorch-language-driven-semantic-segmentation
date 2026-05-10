@@ -2,6 +2,10 @@
 
 My implementation of the "Lseg: language driven semantic segmentation" paper by Boyi Li et al.
 
+<p align="center">
+  <img src="lseg_progress.gif" alt="LSeg prompt-driven segmentation" width="85%"/>
+</p>
+
 ## Architecture
 
 <p align="center">

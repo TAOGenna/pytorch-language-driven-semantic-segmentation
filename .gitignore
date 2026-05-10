@@ -5,3 +5,4 @@ mseg-api/download_scripts/annotations*
 mseg-api/download_scripts/images*
 __pycache__/*
 checkpoints/*
+anim_frames/
