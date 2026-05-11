@@ -134,9 +134,7 @@ def make_frame(idx, left_img, right_img, labels, alphas, scene_label,
     frame.paste(right_img, (RIGHT_X, ROW_Y))
 
     draw = ImageDraw.Draw(frame)
-    draw.text((LEFT_X, 50), "Language-driven Semantic Segmentation",
-              fill=INK, font=TITLE_FONT)
-    draw.text((LEFT_X, 116),
+    draw.text((LEFT_X, 90),
               "LSeg  ·  prompt-driven open-vocabulary segmentation",
               fill=MUTED, font=SUB_FONT)
 
